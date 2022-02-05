@@ -87,6 +87,14 @@ contract SmartLocker {
         numLockers++;
     }
 
+    function updateLockerFee(uint lockerId, uint newFee) 
+        public 
+        onlyLockerOwner(lockers[lockerId])
+    {
+        require(lockers[lockerId].isUsing == false);
+        lockers[lockerId].fee = newFee;
+    }
+
     /***********************************************************************************
     * User Functions
     ***********************************************************************************/
