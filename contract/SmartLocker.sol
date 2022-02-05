@@ -8,9 +8,12 @@ contract SmartLocker {
         string name;
         string lat;
         string lon;
-        uint fee;
+        uint fee;                           // fee per second
+        uint minTime;                       // minimum time to use the locker (sec)
         address owner;
         address currentUser;
+        uint deposit;
+        uint startTime;                     // block timestamp (sec)
         bool isUsing;                       // updatable by user
         bool isAvailable;                   // updatable by owner
         bool isPaused;                      // updatable by contractOwner
@@ -83,12 +86,24 @@ contract SmartLocker {
         string memory name, 
         string memory lat, 
         string memory lon, 
-        uint fee
+        uint fee,
+        uint minTime
     ) public payable {
         require(msg.value >= registerFee);
         deposits[contractOwner] += msg.value;
         lockers[numLockers] = Locker(
-            name, lat, lon, fee, msg.sender, address(0x0), false, true, false
+            name,
+            lat,
+            lon,
+            fee,
+            minTime,
+            msg.sender,
+            address(0x0),
+            0,
+            0,
+            false,
+            true,
+            false
         );
         emit RegisterLocker(msg.sender, numLockers);
         numLockers++;
@@ -130,4 +145,80 @@ contract SmartLocker {
         emit Withdraw(msg.sender, amount);
     }
 
+    function startUsingLocker(uint lockerId, uint256 depositAmount) public {
+        require(lockerId < numLockers);
+
+        // Check if depositAmount is greater than minimum locker deposit amount
+        require(depositAmount >= minLockerDepositAmount(lockerId));
+
+        // Check if a user has enough deposit amount
+        require(deposits[msg.sender] >= depositAmount);
+
+        // Check if a locker can be used.
+        require(canUseLocker(lockerId) == true);
+
+        Locker storage locker = lockers[lockerId];
+        
+        // collect deposit if it remains
+        deposits[locker.owner] += locker.deposit;
+
+        // store new deposit
+        deposits[msg.sender] -= depositAmount;
+        locker.deposit = depositAmount;
+
+        locker.currentUser = msg.sender;
+        locker.isUsing = true;
+        locker.startTime = block.timestamp;
+    }
+
+    function finishUsingLocker(uint lockerId) public {
+        require(lockerId < numLockers);
+        
+        Locker storage locker = lockers[lockerId];
+        
+        require(locker.isPaused == false);
+        require(msg.sender == locker.currentUser);
+
+        uint dueAmount = (block.timestamp - locker.startTime) * locker.fee;
+        require(locker.deposit >= dueAmount);
+
+        deposits[locker.owner] += dueAmount;
+        deposits[locker.currentUser] += locker.deposit - dueAmount;
+        
+        locker.deposit = 0;
+        locker.startTime = 0;
+        locker.currentUser = address(0x0);
+        locker.isUsing = false;
+    }
+
+    /***********************************************************************************
+    * Util Functions
+    ***********************************************************************************/
+
+    function canUseLocker(uint lockerId) public view returns (bool) {
+        require(lockerId < numLockers);
+        Locker storage locker = lockers[lockerId];
+
+        if (locker.isAvailable == false || locker.isPaused == true) {
+            return false;
+        }
+
+        if (locker.isUsing == false) {
+            return true;
+        }
+
+        // Locker can be used when due amount exceeds deposit amount
+        uint dueAmount = (block.timestamp - locker.startTime) * locker.fee;
+        if (locker.isUsing == true && locker.deposit < dueAmount) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function minLockerDepositAmount(uint256 lockerId) public view returns (uint) {
+        require(lockerId < numLockers);
+        Locker storage locker = lockers[lockerId];
+        return locker.fee * locker.minTime;
+    }
 }
