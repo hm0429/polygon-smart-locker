@@ -38,6 +38,11 @@ contract SmartLocker {
         _;
     }
 
+    modifier onlyLockerOwner(Locker storage locker) {
+        require(msg.sender == locker.owner);
+        _;
+    } 
+
     /***********************************************************************************
     * Contract Owner Functions
     ***********************************************************************************/
