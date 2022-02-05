@@ -4,6 +4,17 @@ pragma solidity ^0.8.11;
 
 contract SmartLocker {
 
+    struct Locker {
+        string name;
+        string lat;
+        string lon;
+        uint fee;
+        address owner;
+        address currentUser;
+        bool isAvailable;       // updatable by owner
+        bool isPaused;          // updatable by contractOwner
+    }
+
     address contractOwner;
     mapping (address => uint) deposits;
     
