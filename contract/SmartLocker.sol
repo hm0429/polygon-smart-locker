@@ -204,10 +204,12 @@ contract SmartLocker {
         require(timePassed >= locker.minTime);
 
         uint dueAmount = timePassed * locker.fee;
-        require(locker.deposit >= dueAmount);
-
-        deposits[locker.owner] += dueAmount;
-        deposits[locker.currentUser] += locker.deposit - dueAmount;
+        if (locker.deposit >= dueAmount) {
+            deposits[locker.owner] += dueAmount;
+            deposits[locker.currentUser] += locker.deposit - dueAmount;
+        } else {
+            deposits[locker.owner] = locker.deposit;
+        }
         
         locker.deposit = 0;
         locker.startTime = 0;
