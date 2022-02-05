@@ -8,22 +8,22 @@ contract SmartLocker {
         string name;
         string lat;
         string lon;
-        uint fee;                           // fee per second
-        uint minTime;                       // minimum time to use the locker (sec)
+        uint fee;                               // fee per second
+        uint minTime;                           // minimum time to use the locker (sec)
         address owner;
         address currentUser;
         uint deposit;
-        uint startTime;                     // block timestamp (sec)
-        bool isUsing;                       // updatable by user
-        bool isAvailable;                   // updatable by owner
-        bool isPaused;                      // updatable by contractOwner
+        uint startTime;                         // block timestamp (sec)
+        bool isUsing;                           // updatable by user
+        bool isAvailable;                       // updatable by owner
+        bool isPaused;                          // updatable by contractOwner
     }
 
-    address contractOwner;
-    uint registerFee;                       // fee for registering a new locker
-    mapping (uint => Locker) lockers;
-    uint numLockers;
-    mapping (address => uint) deposits;
+    address public contractOwner;
+    uint public registerFee;                    // fee for registering a new locker
+    mapping (uint => Locker) public lockers;
+    uint public numLockers;
+    mapping (address => uint) public deposits;
 
     /***********************************************************************************
     * Events
