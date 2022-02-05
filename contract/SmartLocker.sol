@@ -4,10 +4,28 @@ pragma solidity ^0.8.11;
 
 contract SmartLocker {
 
+    address contractOwner;
     mapping (address => uint) deposits;
-
+    
     event Deposit(address from, uint amount);
     event Withdraw(address to, uint amount);
+
+    constructor () {
+        contractOwner = msg.sender;
+    }
+
+    modifier onlyContractOwner() {
+        require(msg.sender == contractOwner);
+        _;
+    }
+
+    function updateContractOwner(address newContractOwner) 
+        public
+        onlyContractOwner
+    {
+        require(newContractOwner != address(0x0));
+        contractOwner = newContractOwner;
+    }
 
     function balance() public view returns (uint) {
         return deposits[address(msg.sender)];
