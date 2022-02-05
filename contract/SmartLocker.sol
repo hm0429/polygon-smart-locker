@@ -11,6 +11,7 @@ contract SmartLocker {
         uint fee;
         address owner;
         address currentUser;
+        bool isUsing;                       // updatable by user
         bool isAvailable;                   // updatable by owner
         bool isPaused;                      // updatable by contractOwner
     }
@@ -80,7 +81,7 @@ contract SmartLocker {
         require(msg.value >= registerFee);
         deposits[contractOwner] += msg.value;
         lockers[numLockers] = Locker(
-            name, lat, lon, fee, msg.sender, address(0x0), true, false
+            name, lat, lon, fee, msg.sender, address(0x0), false, true, false
         );
         emit RegisterLocker(msg.sender, numLockers);
         numLockers++;
