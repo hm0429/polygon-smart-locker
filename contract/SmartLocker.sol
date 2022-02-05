@@ -11,18 +11,21 @@ contract SmartLocker {
         uint fee;
         address owner;
         address currentUser;
-        bool isAvailable;       // updatable by owner
-        bool isPaused;          // updatable by contractOwner
+        bool isAvailable;                   // updatable by owner
+        bool isPaused;                      // updatable by contractOwner
     }
 
     address contractOwner;
-    uint registerFee;           // fee for registering a new locker
+    uint registerFee;                       // fee for registering a new locker
+    mapping (uint => Locker) lockers;
+    uint numLockers;
     mapping (address => uint) deposits;
 
     /***********************************************************************************
     * Events
     ***********************************************************************************/
     
+    event RegisterLocker(address owner, uint id);
     event Deposit(address from, uint amount);
     event Withdraw(address to, uint amount);
     
@@ -57,6 +60,25 @@ contract SmartLocker {
         onlyContractOwner
     {
         registerFee = newFee;
+    }
+
+    /***********************************************************************************
+    * Locker Owner Functions
+    ***********************************************************************************/
+
+    function registerLocker(
+        string memory name, 
+        string memory lat, 
+        string memory lon, 
+        uint fee
+    ) public payable {
+        require(msg.value >= registerFee);
+        deposits[contractOwner] += msg.value;
+        lockers[numLockers] = Locker(
+            name, lat, lon, fee, msg.sender, address(0x0), true, false
+        );
+        emit RegisterLocker(msg.sender, numLockers);
+        numLockers++;
     }
 
     /***********************************************************************************
