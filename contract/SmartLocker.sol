@@ -155,7 +155,7 @@ contract SmartLocker {
         require(deposits[msg.sender] >= depositAmount);
 
         // Check if a locker can be used.
-        require(canUseLocker(lockerId) == true);
+        require(canStartUsingLocker(lockerId) == true);
 
         Locker storage locker = lockers[lockerId];
         
@@ -195,7 +195,7 @@ contract SmartLocker {
     * Util Functions
     ***********************************************************************************/
 
-    function canUseLocker(uint lockerId) public view returns (bool) {
+    function canStartUsingLocker(uint lockerId) public view returns (bool) {
         require(lockerId < numLockers);
         Locker storage locker = lockers[lockerId];
 
