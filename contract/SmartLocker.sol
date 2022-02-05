@@ -128,6 +128,14 @@ contract SmartLocker {
         lockers[lockerId].fee = newFee;
     }
 
+    function updateLockerMinTime(uint lockerId, uint newMinTime) 
+        public 
+        onlyLockerOwner(lockers[lockerId])
+    {
+        require(lockers[lockerId].isUsing == false);
+        lockers[lockerId].minTime = newMinTime;
+    }
+
     function updateLockerAvailability(uint lockerId, bool isAvailable) 
         public
         onlyLockerOwner(lockers[lockerId])
