@@ -32,7 +32,9 @@ contract SmartLocker {
     event RegisterLocker(address owner, uint id);
     event Deposit(address from, uint amount);
     event Withdraw(address to, uint amount);
-    
+    event StartUsingLocker(address user, uint lockerId, uint depositAmount);
+    event FinishUsingLocker(address user, uint lockerId, uint dueAmount);
+
     /***********************************************************************************
     * Modifiers
     ***********************************************************************************/
@@ -169,6 +171,8 @@ contract SmartLocker {
         locker.currentUser = msg.sender;
         locker.isUsing = true;
         locker.startTime = block.timestamp;
+
+        emit StartUsingLocker(msg.sender, lockerId, depositAmount);
     }
 
     function finishUsingLocker(uint lockerId) public {
@@ -189,6 +193,8 @@ contract SmartLocker {
         locker.startTime = 0;
         locker.currentUser = address(0x0);
         locker.isUsing = false;
+
+        emit FinishUsingLocker(msg.sender, lockerId, dueAmount);
     }
 
     /***********************************************************************************
