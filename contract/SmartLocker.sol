@@ -68,6 +68,13 @@ contract SmartLocker {
         registerFee = newFee;
     }
 
+    function updateLockerPauseStatus(uint lockerId, bool isPaused)
+        public
+        onlyContractOwner
+    {
+        lockers[lockerId].isPaused = isPaused;   
+    }
+
     /***********************************************************************************
     * Locker Owner Functions
     ***********************************************************************************/
