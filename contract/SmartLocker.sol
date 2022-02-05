@@ -111,6 +111,15 @@ contract SmartLocker {
         numLockers++;
     }
 
+    function updateLockerOwner(uint lockerId, address newOwner) 
+        public
+        onlyLockerOwner(lockers[lockerId])
+    {
+        require(newOwner != address(0x0));
+        lockers[lockerId].owner = newOwner;
+    }
+
+
     function updateLockerFee(uint lockerId, uint newFee) 
         public 
         onlyLockerOwner(lockers[lockerId])
@@ -121,7 +130,7 @@ contract SmartLocker {
 
     function updateLockerAvailability(uint lockerId, bool isAvailable) 
         public
-         onlyLockerOwner(lockers[lockerId])
+        onlyLockerOwner(lockers[lockerId])
     {
         require(lockers[lockerId].isUsing == false);
         lockers[lockerId].isAvailable = isAvailable;
