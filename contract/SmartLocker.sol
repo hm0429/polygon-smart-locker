@@ -216,6 +216,23 @@ contract SmartLocker {
         return false;
     }
 
+    function hasPermissionToOperate(uint lockerId, address user)  public view returns (bool) {
+        require(lockerId < numLockers);
+
+        Locker storage locker = lockers[lockerId];
+
+        if (locker.isAvailable == false || locker.isPaused == true) {
+            return false;
+        }
+
+        uint dueAmount = (block.timestamp - locker.startTime) * locker.fee;
+        if (user == locker.currentUser && locker.isUsing == true && locker.deposit >= dueAmount) {
+            return true;
+        }
+
+        return false;
+    }
+
     function minLockerDepositAmount(uint256 lockerId) public view returns (uint) {
         require(lockerId < numLockers);
         Locker storage locker = lockers[lockerId];
