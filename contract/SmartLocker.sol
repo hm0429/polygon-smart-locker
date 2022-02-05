@@ -18,18 +18,30 @@ contract SmartLocker {
     address contractOwner;
     uint registerFee;           // fee for registering a new locker
     mapping (address => uint) deposits;
+
+    /***********************************************************************************
+    * Events
+    ***********************************************************************************/
     
     event Deposit(address from, uint amount);
     event Withdraw(address to, uint amount);
-
-    constructor () {
-        contractOwner = msg.sender;
-        registerFee = 1 ether;      // 1 MATIC on Polygon
-    }
+    
+    /***********************************************************************************
+    * Modifiers
+    ***********************************************************************************/
 
     modifier onlyContractOwner() {
         require(msg.sender == contractOwner);
         _;
+    }
+
+    /***********************************************************************************
+    * Contract Owner Functions
+    ***********************************************************************************/
+
+    constructor () {
+        contractOwner = msg.sender;
+        registerFee = 1 ether;      // 1 MATIC on Polygon
     }
 
     function updateContractOwner(address newContractOwner) 
@@ -46,6 +58,10 @@ contract SmartLocker {
     {
         registerFee = newFee;
     }
+
+    /***********************************************************************************
+    * User Functions
+    ***********************************************************************************/
 
     function balance() public view returns (uint) {
         return deposits[address(msg.sender)];
