@@ -6,8 +6,8 @@ contract SmartLocker {
 
     mapping (address => uint) deposits;
 
-    event Deposit(address sender, uint amount);
-    event Withdraw(address sender, uint amount);
+    event Deposit(address from, uint amount);
+    event Withdraw(address to, uint amount);
 
     function balance() public view returns (uint) {
         return deposits[address(msg.sender)];
