@@ -9,7 +9,7 @@ contract SmartLocker {
         string lat;
         string lon;
         uint fee;                               // fee per second
-        uint minTime;                           // minimum time to use the locker (sec)
+        uint minDeposit;                        // minimum deposit
         address owner;
         address currentUser;
         uint deposit;
@@ -89,7 +89,7 @@ contract SmartLocker {
         string memory lat, 
         string memory lon, 
         uint fee,
-        uint minTime
+        uint minDeposit
     ) public payable {
         require(msg.value >= registerFee);
         deposits[contractOwner] += msg.value;
@@ -98,7 +98,7 @@ contract SmartLocker {
             lat,
             lon,
             fee,
-            minTime,
+            minDeposit,
             msg.sender,
             address(0x0),
             0,
@@ -128,12 +128,12 @@ contract SmartLocker {
         lockers[lockerId].fee = newFee;
     }
 
-    function updateLockerMinTime(uint lockerId, uint newMinTime) 
+    function updateLockerMinDeposit(uint lockerId, uint newMinDeposit) 
         public 
         onlyLockerOwner(lockers[lockerId])
     {
         require(lockers[lockerId].isUsing == false);
-        lockers[lockerId].minTime = newMinTime;
+        lockers[lockerId].minDeposit = newMinDeposit;
     }
 
     function updateLockerAvailability(uint lockerId, bool isAvailable) 
@@ -167,9 +167,6 @@ contract SmartLocker {
     function startUsingLocker(uint lockerId, uint256 depositAmount) public {
         require(lockerId < numLockers);
 
-        // Check if depositAmount is greater than minimum locker deposit amount
-        require(depositAmount >= minLockerDepositAmount(lockerId));
-
         // Check if a user has enough deposit amount
         require(deposits[msg.sender] >= depositAmount);
 
@@ -177,7 +174,10 @@ contract SmartLocker {
         require(canStartUsingLocker(lockerId) == true);
 
         Locker storage locker = lockers[lockerId];
-        
+
+        // Check if depositAmount is greater than minimum locker deposit amount
+        require(depositAmount >= locker.minDeposit);
+
         // collect deposit if it remains
         deposits[locker.owner] += locker.deposit;
 
@@ -200,10 +200,7 @@ contract SmartLocker {
         require(locker.isPaused == false);
         require(msg.sender == locker.currentUser);
 
-        uint timePassed = block.timestamp - locker.startTime;
-        require(timePassed >= locker.minTime);
-
-        uint dueAmount = timePassed * locker.fee;
+        uint dueAmount = (block.timestamp - locker.startTime) * locker.fee;
         if (locker.deposit >= dueAmount) {
             deposits[locker.owner] += dueAmount;
             deposits[locker.currentUser] += locker.deposit - dueAmount;
@@ -261,9 +258,4 @@ contract SmartLocker {
         return false;
     }
 
-    function minLockerDepositAmount(uint256 lockerId) public view returns (uint) {
-        require(lockerId < numLockers);
-        Locker storage locker = lockers[lockerId];
-        return locker.fee * locker.minTime;
-    }
 }
