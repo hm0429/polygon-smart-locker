@@ -237,15 +237,17 @@ async function onAddDepositClick() {
 
 function onShowLockerClick(lockerId) {
 	const locker = lockers[lockerId]
-	
-	if (locker.isUsing === true && locker.user === account) {
+	if (locker.isUsing === true 
+		&& ethers.utils.getAddress(locker.currentUser) 
+			=== ethers.utils.getAddress(account)) 
+	{
 		$('#locker-start').hide()
 		$('#locker-operation').show()
 	} else {
 		$('#locker-start').show()
 		$('#locker-operation').hide()
 	}
-	$('#locker-id').text(locker.id)
+	$('#locker-id').val(locker.id)
 	$('#locker-name').text(locker.name)
 	$('#locker-fee').text(`fee: ${ethers.utils.formatEther(locker.fee)} MATIC / sec`)
 	$('#locker-min-deposit').text(`minimum deposit: ${ethers.utils.formatEther(locker.minDeposit)} MATIC`)
@@ -253,7 +255,14 @@ function onShowLockerClick(lockerId) {
 }
 
 function onStartUsingLockerButtonClick() {
-
+	let lockerId = $('#locker-id').val()
+	let depositAmount = $('#locker-deposit-input').val()
+	depositAmount = ethers.utils.parseUnits(depositAmount)
+	contract.startUsingLocker(lockerId, depositAmount)
+	.then((tx) => {
+		console.log(tx)
+		alert(`transaction sent: ${tx.hash}`)
+	})
 }
 
 function onUnlockButtonClick() {
@@ -261,7 +270,12 @@ function onUnlockButtonClick() {
 }
 
 function onFinishUsingLockerButtonClick() {
-
+	let lockerId = $('#locker-id').val()
+	contract.finishUsingLocker(lockerId)
+	.then((tx) => {
+		console.log(tx)
+		alert(`transaction sent: ${tx.hash}`)
+	})
 }
 
 $(()=> {
