@@ -1,3 +1,16 @@
+
+// JSON credential file SHOULD NOT be added to open repo.
+const FIREBASE_CREDENTIAL_PATH = "./lock3r-firebase-adminsdk-credential.json"
+
+// Firebase
+const admin = require("firebase-admin")
+const serviceAccount = require(FIREBASE_CREDENTIAL_PATH)
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+})
+db = admin.firestore()
+
+// Express
 const express = require('express')
 const app = express()
 const cors = require('cors')
