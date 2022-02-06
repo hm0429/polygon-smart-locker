@@ -29,6 +29,22 @@ html
             .card-header
               | Account
             .card-body
+              .mt-3
+                label.form-label
+                  | LOCK3R deposit balance
+                .input-group
+                  input#deposit-balance.form-control(type="number", readonly="true")
+                  span.input-group-text
+                    | MATIC
+              .mt-3
+                label.form-label(for="add-deposit-input")
+                  | Add deposit
+                .input-group
+                  input#add-deposit-input.form-control(type="number")
+                  span.input-group-text
+                    | MATIC
+                  button.btn.btn-outline-info(onclick="onAddDepositClick()")
+                    | Add deposit                 
       .row
         #map-container.mt-3.d-flex.p-2
           #map

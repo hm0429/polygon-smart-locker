@@ -1,3 +1,4 @@
+const IS_TEST = true
 const CONTRACT_ADDRESS = "0xb3440d27eA11c74546bB85d2477AE0DCa8083F4e"
 const CONTRACT_ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"from","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Deposit","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"lockerId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"dueAmount","type":"uint256"}],"name":"FinishUsingLocker","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"owner","type":"address"},{"indexed":false,"internalType":"uint256","name":"id","type":"uint256"}],"name":"RegisterLocker","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"lockerId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"depositAmount","type":"uint256"}],"name":"StartUsingLocker","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"Withdraw","type":"event"},{"inputs":[],"name":"balance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"lockerId","type":"uint256"}],"name":"canStartUsingLocker","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractOwner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"deposit","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"deposits","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"lockerId","type":"uint256"}],"name":"finishUsingLocker","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"lockerId","type":"uint256"},{"internalType":"address","name":"user","type":"address"}],"name":"hasPermissionToOperate","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"lockers","outputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"lat","type":"string"},{"internalType":"string","name":"lon","type":"string"},{"internalType":"uint256","name":"fee","type":"uint256"},{"internalType":"uint256","name":"minDeposit","type":"uint256"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"currentUser","type":"address"},{"internalType":"uint256","name":"deposit","type":"uint256"},{"internalType":"uint256","name":"startTime","type":"uint256"},{"internalType":"bool","name":"isUsing","type":"bool"},{"internalType":"bool","name":"isAvailable","type":"bool"},{"internalType":"bool","name":"isPaused","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"numLockers","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"registerFee","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"lat","type":"string"},{"internalType":"string","name":"lon","type":"string"},{"internalType":"uint256","name":"fee","type":"uint256"},{"internalType":"uint256","name":"minDeposit","type":"uint256"}],"name":"registerLocker","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"uint256","name":"lockerId","type":"uint256"},{"internalType":"uint256","name":"depositAmount","type":"uint256"}],"name":"startUsingLocker","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newContractOwner","type":"address"}],"name":"updateContractOwner","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"lockerId","type":"uint256"},{"internalType":"bool","name":"isAvailable","type":"bool"}],"name":"updateLockerAvailability","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"lockerId","type":"uint256"},{"internalType":"uint256","name":"newFee","type":"uint256"}],"name":"updateLockerFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"lockerId","type":"uint256"},{"internalType":"uint256","name":"newMinDeposit","type":"uint256"}],"name":"updateLockerMinDeposit","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"lockerId","type":"uint256"},{"internalType":"address","name":"newOwner","type":"address"}],"name":"updateLockerOwner","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"lockerId","type":"uint256"},{"internalType":"bool","name":"isPaused","type":"bool"}],"name":"updateLockerPauseStatus","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"newFee","type":"uint256"}],"name":"updateRegisterFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"}]
 
@@ -36,17 +37,6 @@ async function changeNetwork() {
 		method: 'wallet_switchEthereumChain',
 		params: [{ chainId: CHAIN_ID }]
 	})	
-}
-
-async function onConnectWalletButtonClick() {
-
-	if (typeof window.ethereum === 'undefined') {
- 		alert("MetaMask should be installed to use LOCK3R")
- 		return
-	}
-
-	const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
-	window.account = accounts[0]
 }
 
 function registerWeb3Callbacks() {
@@ -93,7 +83,14 @@ async function onWalletConnect() {
 			await changeNetwork()
 		})
 	}
-	await loadLockers()
+	initContract()
+	loadAccountInfo()
+	loadLockers()
+}
+
+function initContract() {
+	const provider = new ethers.providers.JsonRpcProvider(PROVIDER_URL)
+	window.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
 }
 
 function onWalletDisconnect() {
@@ -102,10 +99,13 @@ function onWalletDisconnect() {
 	$('#nav-info-wallet').hide()
 }
 
-async function loadLockers() {	
-	showLoading()
-	const provider = new ethers.providers.JsonRpcProvider(PROVIDER_URL)
-	window.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+async function loadAccountInfo() {
+	const deposit = await contract.deposits(account)
+	$('#deposit-balance').val(ethers.utils.formatEther(deposit))
+}
+
+async function loadLockers() {
+	// showLoading()
 	const numLockers = (await contract.numLockers()).toNumber()
 	console.log(numLockers)
 	window.lockers = []
@@ -114,7 +114,7 @@ async function loadLockers() {
 		lockers.push(locker)
 	}
 	renderMap(lockers)
-	hideLoading()
+	// hideLoading()
 }
 
 /***********************************************************************************
@@ -198,6 +198,41 @@ function renderMap(lockers) {
 	})
 }
 
+/***********************************************************************************
+* User Action
+***********************************************************************************/
+
+async function onConnectWalletButtonClick() {
+	if (typeof window.ethereum === 'undefined') {
+ 		alert("MetaMask should be installed to use LOCK3R")
+ 		return
+	}
+
+	const accounts = await ethereum.request({ method: 'eth_requestAccounts' })
+	window.account = accounts[0]
+	
+	if (account) {
+		onWalletConnect()
+	}
+
+}
+
+async function onAddDepositClick() {
+	let amount = $('#add-deposit-input').val()
+	if(!amount) {
+		return
+	}
+	amount = ethers.utils.parseEther(amount)
+	const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+	await provider.send("eth_requestAccounts", []);
+	const signer = provider.getSigner();
+	let contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
+	contract.deposit({value: amount})
+	.then((tx) => {
+		console.log(tx)
+		alert(`transaction sent: ${tx.hash}`)
+	})
+}
 
 $(()=> {
 	prepWeb3()
