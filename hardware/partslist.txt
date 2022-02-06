@@ -1,3 +1,4 @@
 - Raspberry Pi 4 Model B (4GB)
 - microSD card (32GB)
 - Relay Module (Operating voltage: 5V)
+- Solenoid Lock
