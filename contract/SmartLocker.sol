@@ -205,7 +205,7 @@ contract SmartLocker {
             deposits[locker.owner] += dueAmount;
             deposits[locker.currentUser] += locker.deposit - dueAmount;
         } else {
-            deposits[locker.owner] = locker.deposit;
+            deposits[locker.owner] += locker.deposit;
         }
         
         locker.deposit = 0;
