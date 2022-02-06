@@ -24,6 +24,14 @@ app.get('/', (req, res) => {
 	res.render('index')
 })
 
+// TODO: remove test
+app.get('/test', async (req, res) => {
+	await db.collection('lockers').doc('0').set({
+		operation: 'unlock'
+	}, {merge: true})
+	res.json({message: 'ok'})
+})
+
 const port = process.env.PORT || 8080
 app.listen(port, () => {
   console.log('Listening on port', port)
