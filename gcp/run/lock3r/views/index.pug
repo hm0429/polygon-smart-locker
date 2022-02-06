@@ -48,6 +48,34 @@ html
       .row
         #map-container.mt-3.d-flex.p-2
           #map
-
+    .modal#locker-modal(tabindex='-1')
+      .modal-dialog
+        .modal-content
+          .modal-header
+            h5.modal-title
+              span#locker-name
+            button.btn-close(type='button' data-bs-dismiss='modal' aria-label='Close')
+          .modal-body
+            p#locker-fee
+            p#locker-min-deposit
+            input#locker-id(type='hidden')
+            .mt-3#locker-start
+              label.form-label
+                | Transfer deposit and start using locker
+            .input-group
+              input#locker-deposit-input.form-control(type="number")
+              span.input-group-text
+                | MATIC
+              button.btn.btn-outline-info(onclick="onStartUsingLockerButtonClick()")
+                | Start
+            .mt-3#locker-operation
+              .d-grid.gap-2.m-3
+                button.btn.btn-outline-info(onclick="onUnlockButtonClick()")
+                  | Unlock
+              .d-grid.gap-2.m-3
+                button.btn.btn-outline-info(onclick="onFinishUsingLockerButtonClick()")
+                  | Finish
+          .d-grid.gap-2.m-3
+            button.button.btn.btn.btn-outline-secondary(type='button' data-bs-dismiss="modal") Close
 
 

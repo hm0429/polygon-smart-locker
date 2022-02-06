@@ -5,7 +5,6 @@ const CONTRACT_ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constr
 // Mumbai
 const CHAIN_ID = "0x13881"	
 const CHAIN_NAME = "Matic Mumbai"
-const PROVIDER_URL = "https://polygon-mumbai.infura.io/v3/ffde347530eb4101a92175bbd4120866"
 const RPC_URL = "https://rpc-mumbai.matic.today"
 const EXPLORER_URL = "https://mumbai.polygonscan.com/"
 
@@ -83,14 +82,16 @@ async function onWalletConnect() {
 			await changeNetwork()
 		})
 	}
-	initContract()
+	await initContract()
 	loadAccountInfo()
 	loadLockers()
 }
 
-function initContract() {
-	const provider = new ethers.providers.JsonRpcProvider(PROVIDER_URL)
-	window.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+async function initContract() {
+	const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+	await provider.send("eth_requestAccounts", []);
+	const signer = provider.getSigner();
+	window.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
 }
 
 function onWalletDisconnect() {
@@ -187,7 +188,7 @@ function renderMap(lockers) {
 	}
 
 	window.map = new google.maps.Map(document.getElementById('map'), {
-		zoom: 12,
+		zoom: 10,
 		center: {
 			lat: parseFloat(lockers[0].lat), 
 			lng: parseFloat(lockers[0].lon)
@@ -227,10 +228,6 @@ async function onAddDepositClick() {
 		return
 	}
 	amount = ethers.utils.parseEther(amount)
-	const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-	await provider.send("eth_requestAccounts", []);
-	const signer = provider.getSigner();
-	let contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
 	contract.deposit({value: amount})
 	.then((tx) => {
 		console.log(tx)
@@ -239,7 +236,32 @@ async function onAddDepositClick() {
 }
 
 function onShowLockerClick(lockerId) {
-	console.log(lockerId)
+	const locker = lockers[lockerId]
+	
+	if (locker.isUsing === true && locker.user === account) {
+		$('#locker-start').hide()
+		$('#locker-operation').show()
+	} else {
+		$('#locker-start').show()
+		$('#locker-operation').hide()
+	}
+	$('#locker-id').text(locker.id)
+	$('#locker-name').text(locker.name)
+	$('#locker-fee').text(`fee: ${ethers.utils.formatEther(locker.fee)} MATIC / sec`)
+	$('#locker-min-deposit').text(`minimum deposit: ${ethers.utils.formatEther(locker.minDeposit)} MATIC`)
+	$('#locker-modal').modal('show')
+}
+
+function onStartUsingLockerButtonClick() {
+
+}
+
+function onUnlockButtonClick() {
+
+}
+
+function onFinishUsingLockerButtonClick() {
+
 }
 
 $(()=> {
