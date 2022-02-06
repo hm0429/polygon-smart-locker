@@ -82,26 +82,14 @@ async function onWalletConnect() {
 		})
 	}
 	await initContract()
-	loadAccountInfo()
+	loadWeb3AccountInfo()
 	loadLockers()
-}
-
-async function initContract() {
-	const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-	await provider.send("eth_requestAccounts", []);
-	const signer = provider.getSigner();
-	window.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
 }
 
 function onWalletDisconnect() {
 	console.log("onWalletDisconnect")
 	$('#connect-wallet-button').show()
 	$('#nav-info-wallet').hide()
-}
-
-async function loadAccountInfo() {
-	const deposit = await contract.deposits(account)
-	$('#deposit-balance').val(ethers.utils.formatEther(deposit))
 }
 
 async function loadLockers() {
@@ -127,6 +115,10 @@ function getPosition(locker) {
 
 function getDateString(timestamp) {
 	return moment(timestamp.toDate()).format('YYYY-MM-DD HH:mm')
+}
+
+function isSameAddress(a, b) {
+	return ethers.utils.getAddress(a) === ethers.utils.getAddress(b)
 }
 
 /***********************************************************************************
@@ -200,6 +192,35 @@ function renderMap(lockers) {
 	lockers.forEach((locker, index) => {
 		addMarker(window.map, locker)
 	})
+}
+
+
+/***********************************************************************************
+* Smart Contract Interaction
+***********************************************************************************/
+
+async function initContract() {
+	if (window.contract) {
+		return
+	}
+	const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+	await provider.send("eth_requestAccounts", []);
+	const signer = provider.getSigner();
+	window.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer)
+	registerContractEvent()
+}
+
+function registerContractEvent() {
+	contract.on("Deposit", (from, amount) => {
+		if (isSameAddress(from, account)) {
+			loadWeb3AccountInfo()
+		}
+ 	})
+}
+
+async function loadWeb3AccountInfo() {
+	const deposit = await contract.deposits(account)
+	$('#deposit-balance').val(ethers.utils.formatEther(deposit))
 }
 
 /***********************************************************************************
