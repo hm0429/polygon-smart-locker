@@ -111,7 +111,7 @@ async function loadLockers() {
 	window.lockers = []
 	for (let i = 0; i < numLockers; i++) {
 		const locker = await contract.lockers(i)
-		lockers.push(locker)
+		lockers.push({...locker, id: i})
 	}
 	renderMap(lockers)
 	// hideLoading()
@@ -146,10 +146,14 @@ function hideLoading() {
 ***********************************************************************************/
 
 function getInfoWindow(locker) {
+	console.log(locker)
 	const contentString = `
+	<span class="marker-info">
 	<p>name: ${locker.name}</p>
 	<p>fee per sec: ${ethers.utils.formatEther(locker.fee)} MATIC</p>
 	<p>min deposit: ${ethers.utils.formatEther(locker.minDeposit)} MATIC</p>
+	<button class="btn btn-outline-info btn-sm" onclick="onShowLockerClick(${locker.id})">Use this locker</button>
+	</span>
 	`
 	const infoWindow = new google.maps.InfoWindow({
     	content: contentString,
@@ -232,6 +236,10 @@ async function onAddDepositClick() {
 		console.log(tx)
 		alert(`transaction sent: ${tx.hash}`)
 	})
+}
+
+function onShowLockerClick(lockerId) {
+	console.log(lockerId)
 }
 
 $(()=> {
