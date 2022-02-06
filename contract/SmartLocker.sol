@@ -110,29 +110,26 @@ contract SmartLocker {
         lockers[lockerId].owner = newOwner;
     }
 
-
-    function updateLockerFee(uint lockerId, uint newFee) 
-        public 
-        onlyLockerOwner(lockers[lockerId])
-    {
-        require(lockers[lockerId].isUsing == false);
-        lockers[lockerId].fee = newFee;
-    }
-
-    function updateLockerMinDeposit(uint lockerId, uint newMinDeposit) 
-        public 
-        onlyLockerOwner(lockers[lockerId])
-    {
-        require(lockers[lockerId].isUsing == false);
-        lockers[lockerId].minDeposit = newMinDeposit;
-    }
-
-    function updateLockerAvailability(uint lockerId, bool isAvailable) 
+    function updateLocker(
+        uint lockerId,
+        string memory name, 
+        string memory lat, 
+        string memory lon, 
+        uint fee,
+        uint minDeposit,
+        bool isAvailable
+    ) 
         public
         onlyLockerOwner(lockers[lockerId])
     {
-        require(lockers[lockerId].isUsing == false);
-        lockers[lockerId].isAvailable = isAvailable;
+        Locker storage locker = lockers[lockerId];
+        require(locker.isUsing == false);
+        locker.name = name;
+        locker.lat = lat;
+        locker.lon = lon;
+        locker.fee = fee;
+        locker.minDeposit = minDeposit;
+        locker.isAvailable = isAvailable;
     }
 
     /***********************************************************************************
