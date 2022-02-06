@@ -104,3 +104,4 @@ dist
 .tern-port
 .DS_Store
 gcp/run/lock3r/lock3r-firebase-adminsdk-credential.json
+hardware/rpi/lock3r/lock3r-firebase-adminsdk-credential.json
