@@ -4,6 +4,7 @@ const CONTRACT_ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constr
 // Mumbai
 const CHAIN_ID = "0x13881"	
 const CHAIN_NAME = "Matic Mumbai"
+const PROVIDER_URL = "https://polygon-mumbai.infura.io/v3/ffde347530eb4101a92175bbd4120866"
 const RPC_URL = "https://rpc-mumbai.matic.today"
 const EXPLORER_URL = "https://mumbai.polygonscan.com/"
 
@@ -92,6 +93,7 @@ async function onWalletConnect() {
 			await changeNetwork()
 		})
 	}
+	await loadLockers()
 }
 
 function onWalletDisconnect() {
@@ -99,6 +101,103 @@ function onWalletDisconnect() {
 	$('#connect-wallet-button').show()
 	$('#nav-info-wallet').hide()
 }
+
+async function loadLockers() {	
+	showLoading()
+	const provider = new ethers.providers.JsonRpcProvider(PROVIDER_URL)
+	window.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider)
+	const numLockers = (await contract.numLockers()).toNumber()
+	console.log(numLockers)
+	window.lockers = []
+	for (let i = 0; i < numLockers; i++) {
+		const locker = await contract.lockers(i)
+		lockers.push(locker)
+	}
+	renderMap(lockers)
+	hideLoading()
+}
+
+/***********************************************************************************
+* Utils
+***********************************************************************************/
+
+function getPosition(locker) {
+	return {lat: parseFloat(locker.lat), lng: parseFloat(locker.lon)}
+}
+
+function getDateString(timestamp) {
+	return moment(timestamp.toDate()).format('YYYY-MM-DD HH:mm')
+}
+
+/***********************************************************************************
+* UI
+***********************************************************************************/
+
+function showLoading() {
+	$('#loading ,#spinner').height($(window).height()).css('display', 'block')
+}
+
+function hideLoading() {
+	$('#loading ,#spinner').height($(window).height()).css('display', 'none')
+}
+
+/***********************************************************************************
+* UI - Maps
+***********************************************************************************/
+
+function getInfoWindow(locker) {
+	const contentString = `
+	<p>name: ${locker.name}</p>
+	<p>fee per sec: ${ethers.utils.formatEther(locker.fee)} MATIC</p>
+	<p>min deposit: ${ethers.utils.formatEther(locker.minDeposit)} MATIC</p>
+	`
+	const infoWindow = new google.maps.InfoWindow({
+    	content: contentString,
+  	})
+  	return infoWindow
+}
+
+
+function addMarker(map, locker) {
+	const marker = new google.maps.Marker({
+    	position: getPosition(locker),
+    	map: map,
+    	animation: google.maps.Animation.DROP,
+    	title: locker.name
+  	})
+  	marker.addListener('click', () => {
+    	if (window.currentInfoWindow) window.currentInfoWindow.close()
+  		window.currentInfoWindow = getInfoWindow(locker)
+  		window.currentInfoWindow.open({
+  			anchor: marker,
+  			map,
+  			shouldFocus: false
+  		})
+	})
+}
+
+function renderMap(lockers) {
+
+	if (lockers.length < 1) {
+		return
+	}
+
+	window.map = new google.maps.Map(document.getElementById('map'), {
+		zoom: 12,
+		center: {
+			lat: parseFloat(lockers[0].lat), 
+			lng: parseFloat(lockers[0].lon)
+		},
+	})
+	map.addListener('click', function() {
+    	if (window.currentInfoWindow) window.currentInfoWindow.close()
+	})
+
+	lockers.forEach((locker, index) => {
+		addMarker(window.map, locker)
+	})
+}
+
 
 $(()=> {
 	prepWeb3()

@@ -8,13 +8,30 @@ html
     script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js")
     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js")
     script(src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js")
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js', integrity='sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==', crossorigin='anonymous', referrerpolicy='no-referrer')
+    script(src='https://maps.google.com/maps/api/js?key=AIzaSyBErH2Qs7k65oVNmsy-nvXGk8vI0AKz3CA&language=ja')
     script(src="/js/main.js")
   body
+    #loading
+      #spinner.d-flex.justify-content-center.align-items-center
+        .spinner-border.text-primary(role="status")
+          .sr-only
     #nav.navbar.navbar-dark.bg-dark
       .container-fluid
         a.navbar-brand(href="/") LOCK3R
         button#connect-wallet-button.btn.btn-outline-info(onclick="onConnectWalletButtonClick()")
           | Connect Wallet
         span#nav-info-wallet.text-info
-    #main-container.container-fluid.mx-auto.row
-      p piyo
+    #main-container.container-fluid.mx-auto
+      .row
+        .col-sm-6.mx-auto
+          #info-box-account.card.mt-3
+            .card-header
+              | Account
+            .card-body
+      .row
+        #map-container.mt-3.d-flex.p-2
+          #map
+
+
+

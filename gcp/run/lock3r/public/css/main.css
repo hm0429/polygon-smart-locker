@@ -1,3 +1,29 @@
+#loading {
+	display: none;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 0px;
+	left: 0px;
+	background: rgba(0, 0, 0, 0.31);
+	z-index: 1;
+}
+
+#spinner {
+	display: none;
+	color: #fff;
+	z-index: 2;
+}
+
 #nav-info-wallet {
 	display: none;
+}
+
+#map-container {
+	height: 60vh;
+}
+
+#map {
+	width: 100%;
+	height: 100%;
 }
