@@ -5,17 +5,17 @@ pragma solidity ^0.8.11;
 contract SmartLocker {
 
     struct Locker {
-        string name;
-        string lat;
-        string lon;
-        uint fee;                               // fee per second
-        uint minDeposit;                        // minimum deposit
-        address owner;
-        address currentUser;
-        uint deposit;
-        uint startTime;                         // block timestamp (sec)
-        bool isUsing;                           // updatable by user
-        bool isAvailable;                       // updatable by owner
+        string name;          // locker name used in FE
+        string lat;           // used to show locker location on map
+        string lon;           // used to show locker location on map
+        uint fee;             // fee per second
+        uint minDeposit;      // minimum deposit
+        address owner;        // store locker owner
+        address currentUser;  // store current user
+        uint deposit;         // store deposit from current user
+        uint startTime;       // block timestamp (sec)
+        bool isUsing;         // true when someone uses this locker
+        bool isAvailable;     // updatable by owner
     }
 
     address public contractOwner;
