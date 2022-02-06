@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "cors": "^2.8.5",
+    "ethers": "^5.5.4",
     "express": "^4.17.2",
     "firebase-admin": "^10.0.2",
     "pug": "^3.0.2"
