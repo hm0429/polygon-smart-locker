@@ -161,10 +161,10 @@ contract SmartLocker {
         // Check if a user has enough deposit amount
         require(deposits[msg.sender] >= depositAmount);
 
-        // Check if a locker can be used.
-        require(canStartUsingLocker(lockerId) == true);
-
         Locker storage locker = lockers[lockerId];
+
+        // Check if a locker is used by current user
+        require(hasPermissionToOperate(lockerId, locker.currentUser) == false);
 
         // Check if depositAmount is greater than minimum locker deposit amount
         require(depositAmount >= locker.minDeposit);
@@ -209,27 +209,6 @@ contract SmartLocker {
     /***********************************************************************************
     * Util Functions
     ***********************************************************************************/
-
-    function canStartUsingLocker(uint lockerId) public view returns (bool) {
-        require(lockerId < numLockers);
-        Locker storage locker = lockers[lockerId];
-
-        if (locker.isAvailable == false) {
-            return false;
-        }
-
-        if (locker.isUsing == false) {
-            return true;
-        }
-
-        // Locker can be used when due amount exceeds deposit amount
-        uint dueAmount = (block.timestamp - locker.startTime) * locker.fee;
-        if (locker.isUsing == true && locker.deposit < dueAmount) {
-            return true;
-        }
-
-        return false;
-    }
 
     function hasPermissionToOperate(uint lockerId, address user)  public view returns (bool) {
         require(lockerId < numLockers);
