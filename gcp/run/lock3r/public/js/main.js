@@ -121,6 +121,20 @@ function isSameAddress(a, b) {
 	return ethers.utils.getAddress(a) === ethers.utils.getAddress(b)
 }
 
+function isLockerAvailable(lockerId) {
+	const locker = lockers[lockerId]
+	const fee = ethers.utils.formatEther(locker.fee)
+	const deposit = ethers.utils.formatEther(locker.deposit)
+	const start = moment(locker.startTime.toNumber() * 1000)
+	const availableUntil = start.add(deposit / fee ,'s')
+	const diff = availableUntil.diff(moment())
+	if(diff > 0) {
+		return false
+	} else {
+		return true
+	}
+}
+
 /***********************************************************************************
 * UI - Maps
 ***********************************************************************************/
@@ -255,11 +269,16 @@ function hideLoading() {
 function refreshLockerUI(lockerId) {
 	const locker = lockers[lockerId]
 	if (locker.isUsing === true 
-		&& ethers.utils.getAddress(locker.currentUser) 
-			=== ethers.utils.getAddress(account)) 
+		&& isSameAddress(locker.currentUser, account)) 
 	{
 		$('#locker-start').hide()
 		$('#locker-operation').show()
+		refreshLockerRemainingDeposit(lockerId)
+	} else if (locker.isUsing === true
+		&& isLockerAvailable(lockerId) === false) {
+		$('#locker-start').hide()
+		$('#locker-operation').hide()
+		alert("This locker is currently in use.")
 	} else {
 		$('#locker-start').show()
 		$('#locker-operation').hide()
@@ -269,6 +288,35 @@ function refreshLockerUI(lockerId) {
 	$('#locker-fee').text(`fee: ${ethers.utils.formatEther(locker.fee)} MATIC / sec`)
 	$('#locker-min-deposit').text(`minimum deposit: ${ethers.utils.formatEther(locker.minDeposit)} MATIC`)
 	$('#locker-modal').modal('show')
+}
+
+function refreshLockerRemainingDeposit(lockerId) {
+	if (window.lockerRemainingDepositTimer) {
+		clearInterval(window.lockerRemainingDepositTimer)
+	}
+	window.lockerRemainingDepositTimer = setInterval(() => {
+		const locker = lockers[lockerId]
+		const fee = ethers.utils.formatEther(locker.fee)
+		const deposit = ethers.utils.formatEther(locker.deposit)
+
+		const start = moment(locker.startTime.toNumber() * 1000)
+		const availableUntil = start.add(deposit / fee ,'s')
+		const diff = availableUntil.diff(moment()) / 1000
+		const balance = diff * fee
+
+		if (balance < 0) {
+			clearInterval(window.lockerRemainingDepositTimer)
+			window.lockerRemainingDepositTimer = null
+			return
+		}
+
+		const html = `
+		<p>Your deposit (MATIC): ${deposit}</p>
+		<p>Remaining (MATIC): ${balance.toFixed(3)}</p>
+		<p>Available until: ${availableUntil}</p>
+		`
+		$('#locker-remaining-deposit').html(html)
+	}, 1000)
 }
 
 /***********************************************************************************
