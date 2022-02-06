@@ -16,7 +16,6 @@ contract SmartLocker {
         uint startTime;                         // block timestamp (sec)
         bool isUsing;                           // updatable by user
         bool isAvailable;                       // updatable by owner
-        bool isPaused;                          // updatable by contractOwner
     }
 
     address public contractOwner;
@@ -73,13 +72,6 @@ contract SmartLocker {
         registerFee = newFee;
     }
 
-    function updateLockerPauseStatus(uint lockerId, bool isPaused)
-        public
-        onlyContractOwner
-    {
-        lockers[lockerId].isPaused = isPaused;   
-    }
-
     /***********************************************************************************
     * Locker Owner Functions
     ***********************************************************************************/
@@ -104,8 +96,7 @@ contract SmartLocker {
             0,
             0,
             false,
-            true,
-            false
+            true
         );
         emit RegisterLocker(msg.sender, numLockers);
         numLockers++;
@@ -197,7 +188,6 @@ contract SmartLocker {
         
         Locker storage locker = lockers[lockerId];
         
-        require(locker.isPaused == false);
         require(msg.sender == locker.currentUser);
 
         uint dueAmount = (block.timestamp - locker.startTime) * locker.fee;
@@ -224,7 +214,7 @@ contract SmartLocker {
         require(lockerId < numLockers);
         Locker storage locker = lockers[lockerId];
 
-        if (locker.isAvailable == false || locker.isPaused == true) {
+        if (locker.isAvailable == false) {
             return false;
         }
 
@@ -246,7 +236,7 @@ contract SmartLocker {
 
         Locker storage locker = lockers[lockerId];
 
-        if (locker.isAvailable == false || locker.isPaused == true) {
+        if (locker.isAvailable == false) {
             return false;
         }
 
