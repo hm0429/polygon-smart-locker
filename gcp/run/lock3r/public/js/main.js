@@ -122,18 +122,6 @@ function isSameAddress(a, b) {
 }
 
 /***********************************************************************************
-* UI
-***********************************************************************************/
-
-function showLoading() {
-	$('#loading ,#spinner').height($(window).height()).css('display', 'block')
-}
-
-function hideLoading() {
-	$('#loading ,#spinner').height($(window).height()).css('display', 'none')
-}
-
-/***********************************************************************************
 * UI - Maps
 ***********************************************************************************/
 
@@ -212,8 +200,31 @@ async function initContract() {
 
 function registerContractEvent() {
 	contract.on("Deposit", (from, amount) => {
+		console.log("Event: Deposit")
 		if (isSameAddress(from, account)) {
 			loadWeb3AccountInfo()
+		}
+ 	})
+
+	contract.on("StartUsingLocker", (user, lockerId, depositAmount) => {
+		console.log("Event: StartUsingLocker")
+		let i = lockerId.toNumber()
+		if (isSameAddress(user, account) 
+			&& i === window.currentLockerId) {
+			loadWeb3AccountInfo()
+			updateLocker(i)
+			alert("You are now able to unlock the locker.")
+		}
+ 	})
+
+	contract.on("FinishUsingLocker", (user, lockerId, dueAmount) => {
+		console.log("Event: FinishUsingLocker")
+		let i = lockerId.toNumber()
+		if (isSameAddress(user, account) 
+			&& i === window.currentLockerId) {
+			loadWeb3AccountInfo()
+			updateLocker(i)
+			alert("Finished using locker.")
 		}
  	})
 }
@@ -221,6 +232,43 @@ function registerContractEvent() {
 async function loadWeb3AccountInfo() {
 	const deposit = await contract.deposits(account)
 	$('#deposit-balance').val(ethers.utils.formatEther(deposit))
+}
+
+async function updateLocker(lockerId) {
+	const locker = await contract.lockers(lockerId)
+	lockers[lockerId] = {...locker, id: lockerId}
+	refreshLockerUI(lockerId)
+}
+
+/***********************************************************************************
+* UI
+***********************************************************************************/
+
+function showLoading() {
+	$('#loading ,#spinner').height($(window).height()).css('display', 'block')
+}
+
+function hideLoading() {
+	$('#loading ,#spinner').height($(window).height()).css('display', 'none')
+}
+
+function refreshLockerUI(lockerId) {
+	const locker = lockers[lockerId]
+	if (locker.isUsing === true 
+		&& ethers.utils.getAddress(locker.currentUser) 
+			=== ethers.utils.getAddress(account)) 
+	{
+		$('#locker-start').hide()
+		$('#locker-operation').show()
+	} else {
+		$('#locker-start').show()
+		$('#locker-operation').hide()
+	}
+	$('#locker-id').val(locker.id)
+	$('#locker-name').text(locker.name)
+	$('#locker-fee').text(`fee: ${ethers.utils.formatEther(locker.fee)} MATIC / sec`)
+	$('#locker-min-deposit').text(`minimum deposit: ${ethers.utils.formatEther(locker.minDeposit)} MATIC`)
+	$('#locker-modal').modal('show')
 }
 
 /***********************************************************************************
@@ -305,22 +353,8 @@ async function onAddDepositClick() {
 }
 
 function onShowLockerClick(lockerId) {
-	const locker = lockers[lockerId]
-	if (locker.isUsing === true 
-		&& ethers.utils.getAddress(locker.currentUser) 
-			=== ethers.utils.getAddress(account)) 
-	{
-		$('#locker-start').hide()
-		$('#locker-operation').show()
-	} else {
-		$('#locker-start').show()
-		$('#locker-operation').hide()
-	}
-	$('#locker-id').val(locker.id)
-	$('#locker-name').text(locker.name)
-	$('#locker-fee').text(`fee: ${ethers.utils.formatEther(locker.fee)} MATIC / sec`)
-	$('#locker-min-deposit').text(`minimum deposit: ${ethers.utils.formatEther(locker.minDeposit)} MATIC`)
-	$('#locker-modal').modal('show')
+	window.currentLockerId = lockerId
+	refreshLockerUI(lockerId)
 }
 
 function onStartUsingLockerButtonClick() {
